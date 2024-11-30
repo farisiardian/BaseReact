@@ -1,9 +1,9 @@
-interface Auth {
-  setToken: (access_token: string, refresh_token: string) => void;
-  getToken: () => string | null;
-  clearToken: () => void;
-  isAuthenticated: () => boolean;
-}
+// interface Auth {
+//   setToken: (access_token: string, refresh_token: string) => void;
+//   getToken: () => string | null;
+//   clearToken: () => void;
+//   isAuthenticated: () => boolean;
+// }
 
 const auth = {
   setToken: (access_token: string, refresh_token: string) => {
