@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import Avatar from '@mui/material/Avatar';
 import MuiDrawer, { drawerClasses } from '@mui/material/Drawer';
@@ -8,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import SelectContent from '../common/selectContent';
 import MenuContent from '../common/menuContent';
 import OptionsMenu from '../common/optionsMenu';
+import { userApi } from '../../store/user/userApi'; // Import the userApi
 
 const drawerWidth = 240;
 
@@ -15,7 +17,6 @@ const Drawer = styled(MuiDrawer)({
   width: drawerWidth,
   flexShrink: 0,
   boxSizing: 'border-box',
-  mt: 10,
   [`& .${drawerClasses.paper}`]: {
     width: drawerWidth,
     boxSizing: 'border-box',
@@ -23,6 +24,19 @@ const Drawer = styled(MuiDrawer)({
 });
 
 export default function SideMenu() {
+  const [profile, setProfile] = useState({ username: '', email: '' });
+
+  useEffect(() => {
+    userApi
+      .getMe()
+      .then((response) => {
+        setProfile(response.data);
+      })
+      .catch((error) => {
+        console.error('Failed to fetch profile:', error);
+      });
+  }, []);
+
   return (
     <Drawer
       variant="permanent"
@@ -56,16 +70,16 @@ export default function SideMenu() {
       >
         <Avatar
           sizes="small"
-          alt="Riley Carter"
-          src="/static/images/avatar/7.jpg"
+          alt={profile.username}
+          src="/static/images/avatar/7.jpg" // Replace with user's avatar URL if available
           sx={{ width: 36, height: 36 }}
         />
         <Box sx={{ mr: 'auto' }}>
           <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: '16px' }}>
-            Riley Carter
+            {profile.username}
           </Typography>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            riley@email.com
+            {profile.email}
           </Typography>
         </Box>
         <OptionsMenu />
