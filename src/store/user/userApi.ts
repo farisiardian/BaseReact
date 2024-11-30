@@ -17,6 +17,7 @@ interface UpdateUserRequest {
   id: number;
   username?: string;
   email?: string;
+  password?: string; // Add password as optional for updates
   [key: string]: any;
 }
 

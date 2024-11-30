@@ -6,7 +6,7 @@ import NavigateNextRoundedIcon from '@mui/icons-material/NavigateNextRounded';
 const StyledBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
   margin: theme.spacing(1, 0),
   [`& .${breadcrumbsClasses.separator}`]: {
-    color: "white",
+    color:theme.palette.action.disabled,
     margin: 1,
   },
   [`& .${breadcrumbsClasses.ol}`]: {
