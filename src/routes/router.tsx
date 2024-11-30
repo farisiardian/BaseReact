@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginPage from '../pages/loginPage';
 import RegisterPage from '../pages/registerPage';
 import DashboardPage from '../pages/dashboard/dashboardPage';
-import ProtectedRoute from '../components/protectedRoute';
+import ProtectedRoute from './protectedRoute';
 
 const AppRouter = () => (
   <Router>
