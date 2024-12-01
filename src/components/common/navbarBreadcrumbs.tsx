@@ -1,29 +1,56 @@
-import { styled } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
-import Breadcrumbs, { breadcrumbsClasses } from '@mui/material/Breadcrumbs';
-import NavigateNextRoundedIcon from '@mui/icons-material/NavigateNextRounded';
+import { Breadcrumbs, Link, Typography } from '@mui/material';
+import { useLocation, Link as RouterLink } from 'react-router-dom';
 
-const StyledBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
-  margin: theme.spacing(1, 0),
-  [`& .${breadcrumbsClasses.separator}`]: {
-    color:theme.palette.action.disabled,
-    margin: 1,
-  },
-  [`& .${breadcrumbsClasses.ol}`]: {
-    alignItems: 'center',
-  },
-}));
+// Map route paths to user-friendly names
+const routeNames: Record<string, string> = {
+  '': 'Dashboard', // Root path is "Dashboard"
+  users: 'Users',
+  form: 'Form',
+  login: 'Login',
+  register: 'Register',
+};
 
-export default function NavbarBreadcrumbs() {
+const NavbarBreadcrumbs = () => {
+  const location = useLocation();
+
+  // Split the current pathname into segments
+  const pathnames = location.pathname.split('/').filter((x) => x);
+
+  // Handle specific cases where pathnames should merge
+  const adjustedPathnames = [...pathnames];
+  if (adjustedPathnames.includes('add') || adjustedPathnames.includes('edit')) {
+    adjustedPathnames[adjustedPathnames.length - 1] = 'form'; // Replace 'add' or 'edit/:id' with 'form'
+  }
+
   return (
-    <StyledBreadcrumbs
-      aria-label="breadcrumb"
-      separator={<NavigateNextRoundedIcon fontSize="small" />}
-    >
-      <Typography variant="body1">Dashboard</Typography>
-      <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 600 }}>
-        Home
-      </Typography>
-    </StyledBreadcrumbs>
+    <Breadcrumbs aria-label="breadcrumb">
+      {/* Dashboard is always the first breadcrumb */}
+      <Link component={RouterLink} to="/" color="inherit" underline="hover">
+        {routeNames['']}
+      </Link>
+      {/* Dynamic breadcrumbs */}
+      {adjustedPathnames.map((value, index) => {
+        const routeTo = `/${adjustedPathnames.slice(0, index + 1).join('/')}`;
+        const isLast = index === adjustedPathnames.length - 1;
+
+        return isLast ? (
+          <Typography color="text.primary" key={routeTo}>
+            {routeNames[value] || value}
+          </Typography>
+        ) : (
+          <Link
+            component={RouterLink}
+            to={routeTo}
+            color="inherit"
+            underline="hover"
+            key={routeTo}
+          >
+            {routeNames[value] || value}
+          </Link>
+        );
+      })}
+    </Breadcrumbs>
   );
-}
+};
+
+export default NavbarBreadcrumbs;

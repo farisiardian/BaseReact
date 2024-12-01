@@ -4,6 +4,7 @@ interface User {
   id: number;
   username: string;
   email: string;
+  roles: { id: number; name: string }[]; // Roles as an array of objects
   [key: string]: any; // To allow for additional user fields
 }
 
@@ -24,6 +25,8 @@ interface UpdateUserRequest {
 export const userApi = {
   getUsers: () => apiWrapper.get<User[]>('/users/'),
   getMe: () => apiWrapper.get<User>('/users/me/'),
+  assignRoleToUser: (userId: number, roleId: number) => 
+    apiWrapper.post('/users/assign-role/', { user_id: userId, role_id: roleId }),
   getUserById: (id: number) => apiWrapper.get<User>(`/users/${id}/`),
   createUser: (data: CreateUserRequest) => apiWrapper.post<User>('/users/', data),
   updateUser: (data: UpdateUserRequest) =>

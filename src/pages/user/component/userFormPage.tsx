@@ -65,31 +65,46 @@ const UserFormPage: React.FC = () => {
   };
 
   return (
-    <Paper sx={{ padding: 3 }}>
-      <Box sx={{ maxWidth: 600, margin: '0 auto' }}>
-        <TextField
-          label="Username"
-          fullWidth
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          sx={{ marginBottom: 2 }}
-        />
-        <TextField
-          label="Email"
-          fullWidth
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          sx={{ marginBottom: 2 }}
-        />
-        {!user && (
+    <Paper sx={{ width: '100%', padding: 3 }}>
+      <Box sx={{ width: '100%', margin: '0 auto' }}>
+        <Box sx={{ marginBottom: 2 }}>
+          <label htmlFor="username" style={{ display: 'block', marginBottom: 8 }}>
+            Username
+          </label>
           <TextField
-            label="Password"
             fullWidth
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             sx={{ marginBottom: 2 }}
-            type="password"
+            placeholder="Enter Username here"
           />
+        </Box>
+        <Box sx={{ marginBottom: 2 }}>
+          <label htmlFor="email" style={{ display: 'block', marginBottom: 8 }}>
+            Email
+          </label>
+          <TextField
+            fullWidth
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            sx={{ marginBottom: 2 }}
+            placeholder="Enter Email here"
+          />
+        </Box>
+        {!user && (
+          <Box sx={{ marginBottom: 2 }}>
+            <label htmlFor="password" style={{ display: 'block', marginBottom: 8 }}>
+              Password
+            </label>
+              <TextField
+                fullWidth
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                sx={{ marginBottom: 2 }}
+                type="password"
+                placeholder="Enter Password here"
+              />
+          </Box>
         )}
         <Button variant="contained" color="primary" onClick={handleSave}>
           {user ? 'Save Changes' : 'Add User'}

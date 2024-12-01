@@ -5,15 +5,17 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
-import { HomeRounded, Person2Outlined, SettingsRounded } from '@mui/icons-material';
+import { HomeRounded, Person2Outlined, SettingsRounded, KeyOutlined, LockOutlined } from '@mui/icons-material';
 
 const mainListItems = [
-  { text: 'Home', icon: <HomeRounded />, path: '/dashboard' },
+  { text: 'Home', icon: <HomeRounded />, path: '/' },
   { text: 'User', icon: <Person2Outlined />, path: '/users' },
+  { text: 'Role', icon: <KeyOutlined />, path: '/roles' },
+  { text: 'Permission', icon: <LockOutlined />, path: '/permissions' },
 ];
 
 const secondaryListItems = [
-  { text: 'Settings', icon: <SettingsRounded />, path: '/dashboard/settings' },
+  { text: 'Settings', icon: <SettingsRounded />, path: '/settings' },
 ];
 
 export default function MenuContent() {

@@ -74,7 +74,7 @@ const LoginPage: React.FC = () => {
       dispatch(login());
       localStorage.setItem('token_access', data.access);
       localStorage.setItem('token_refresh', data.refresh);
-      window.location.href = '/dashboard';
+      window.location.href = '/';
     } catch (err) {
       setError('Login failed. Please check your credentials.');
       console.error('Login failed:', err);
