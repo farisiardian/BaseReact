@@ -6,7 +6,6 @@ import { Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { userApi } from '../../store/user/userApi';
 import AlertDialog from '../../components/common/alertDialog';
-import AssignFormDialog from './component/assignFormDialog';
 
 interface User {
   id: number;
@@ -20,8 +19,6 @@ const UserListView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState<number | null>(null);
-  const [openAssignRoleDialog, setOpenAssignRoleDialog] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -68,22 +65,17 @@ const UserListView: React.FC = () => {
     setOpenDialog(false);
   };
 
-  const handleAssignRole = (userId: number) => {
-    setSelectedUserId(userId);
-    setOpenAssignRoleDialog(true);
-  };
-
   const columns: GridColDef[] = [
     { field: 'username', headerName: 'Username', flex: 1 },
     { field: 'email', headerName: 'Email', flex: 2 },
     {
-      field: 'roles',
+      field: 'role_detail',
       headerName: 'Roles',
       flex: 2,
       renderCell: (params) => {
-        const roles = params.value as { id: number; name: string }[];
-        return roles.length > 0 ? roles.map((role) => role.name).join(', ') : 'No roles';
-      },
+        const role = params.value as { id: number; name: string } | null;
+        return role ? role.name : 'No roles';
+      },      
     },
     {
       field: 'actions',
@@ -98,12 +90,7 @@ const UserListView: React.FC = () => {
           icon={<Delete />}
           label="Delete"
           onClick={() => handleDelete(params.row.id as number)}
-        />,
-        <GridActionsCellItem
-          icon={<Person />}
-          label="Assign Role"
-          onClick={() => handleAssignRole(params.row.id as number)}
-        />,
+        />
       ],
     },
   ];
@@ -138,12 +125,6 @@ const UserListView: React.FC = () => {
         confirmButtonText="Delete"
         cancelButtonText="Cancel"
         confirmButtonColor="error"
-      />
-      {/* Role Assignment Dialog */}
-      <AssignFormDialog
-        open={openAssignRoleDialog}
-        onClose={() => setOpenAssignRoleDialog(false)}
-        userId={selectedUserId}
       />
     </Paper>
   );

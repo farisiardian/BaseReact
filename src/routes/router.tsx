@@ -36,7 +36,6 @@ const AppRouter = () => (
         <Route path="roles/edit/:id" element={<RoleFormPage />} />
 
         <Route path="permissions" element={<PermissionListView />} />
-        <Route path="permissions/add" element={<PermissionFormPage />} />
         <Route path="permissions/edit/:id" element={<PermissionFormPage />} />
       </Route>
     </Routes>

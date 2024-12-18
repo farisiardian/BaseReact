@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { TextField, Button, Paper, Box } from '@mui/material';
+import { TextField, Button, Paper, Box, Autocomplete } from '@mui/material';
 import { userApi } from '../../../store/user/userApi'; // Import the API
+import { roleApi } from '../../../store/role/roleApi';
 
 interface User {
   id: number;
   username: string;
   email: string;
   password?: string; // Optional, for edit (password will not be required if updating)
+}
+
+interface Role {
+  id: number;
+  name: string;
 }
 
 const UserFormPage: React.FC = () => {
@@ -17,6 +23,9 @@ const UserFormPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState(''); // Add password state
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -33,36 +42,56 @@ const UserFormPage: React.FC = () => {
         });
     }
   }, [id]);
+  
+  useEffect(() => {
+    fetchRoles();
+  }, []);
+
+  const fetchRoles = () => {
+    setLoading(true);
+    roleApi
+      .getRoles()
+      .then((response) => {
+        setRoles(response.data);
+      })
+      .catch((error) => {
+        console.error('Failed to fetch roles:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   const handleSave = () => {
+    const selectedRoleId = selectedRole ? selectedRole.id : 0;
+  
     const newUser = {
       username,
       email,
-      password: password || '', // Include password, even if empty
+      password: password || '',
+      role: selectedRoleId,
     };
-
+  
     if (user) {
-      // Update user, ensure password is sent if it's changed
       userApi
         .updateUser({ id: user.id, ...newUser })
         .then(() => {
-          navigate('/users'); // Redirect to the users list after saving
+          navigate('/users');
         })
         .catch((error) => {
           console.error('Failed to update user:', error);
         });
     } else {
-      // Create new user
       userApi
         .createUser(newUser)
         .then(() => {
-          navigate('/users'); // Redirect to the users list after adding
+          navigate('/users');
         })
         .catch((error) => {
           console.error('Failed to add user:', error);
         });
     }
-  };
+  };  
 
   return (
     <Paper sx={{ width: '100%', padding: 3 }}>
@@ -106,6 +135,20 @@ const UserFormPage: React.FC = () => {
               />
           </Box>
         )}
+        <Box sx={{ marginBottom: 2 }}>
+          <label htmlFor="role" style={{ display: 'block', marginBottom: 8 }}>
+            Select Role
+          </label>
+          <Autocomplete
+            value={selectedRole}
+            onChange={(event, newValue) => setSelectedRole(newValue)}
+            options={roles}
+            getOptionLabel={(option) => option.name}
+            loading={loading}
+            renderInput={(params) => <TextField {...params} />}
+            sx={{ marginBottom: 2 }}
+          />
+        </Box>
         <Button variant="contained" color="primary" onClick={handleSave}>
           {user ? 'Save Changes' : 'Add User'}
         </Button>

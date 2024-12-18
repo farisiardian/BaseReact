@@ -5,6 +5,7 @@ interface Permission {
     role: number;
     permission_name: string;
     description: string;
+    is_permission: boolean;
 }
 
 interface PermissionHelper {
@@ -15,10 +16,19 @@ interface PermissionHelper {
 }
 
 export const permissionApi = {
-    getPermissions: () => apiWrapper.get<Permission[]>('/permissions/'),
-    getPermissionById: (id: number) => apiWrapper.get<Permission>(`/permissions/${id}/`),
-    getPermissionHelpers: () => apiWrapper.get<PermissionHelper[]>('/permission-helpers/'),
-    createPermission: (data: Partial<Permission>) => apiWrapper.post<Permission>('/permissions/', data),
-    updatePermission: (data: Partial<Permission>) => apiWrapper.put<Permission>(`/permissions/${data.id}/`, data),
-    deletePermission: (id: number) => apiWrapper.delete<void>(`/permissions/${id}/`),
+  getPermissions: (role?: number) => {
+    const url = role ? `/permissions/?role=${role}` : '/permissions/';
+    return apiWrapper.get<Permission[]>(url);
+  },
+  getPermissionById: (id: number) => apiWrapper.get<Permission>(`/permissions/${id}/`),
+  getPermissionHelpers: () => apiWrapper.get<PermissionHelper[]>('/permission-helpers/'),
+  updatePermission: (data: Partial<Permission>) => {
+    if (!data.id) {
+      throw new Error('Permission ID is required for updating.');
+    }
+    return apiWrapper.patch<Permission>(`/permissions/${data.id}/`, data);
+  },
+  updatePermissions: (data: Partial<Permission>[]) => {
+    return apiWrapper.put('/permissions/batch-update/', data);  // Adjust the endpoint for batch updates
+  },
 };

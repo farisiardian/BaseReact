@@ -28,8 +28,8 @@ const BaseLayout: React.FC = (props: { disableCustomTheme?: boolean }) => {
           <Stack
             spacing={2}
             sx={{
-              alignItems: 'center',
-              mx: 3,
+              alignItems: 'flex-start',  // Aligns content to the left
+              mx: 3,  // Adjusts horizontal spacing
               pb: 5,
               mt: { xs: 8, md: 0 },
             }}

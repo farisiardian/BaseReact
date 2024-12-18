@@ -1,184 +1,109 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { TextField, Button, Paper, Box, Autocomplete, CircularProgress } from '@mui/material';
-import { permissionApi } from '../../../store/permission/permissionApi'; // Import the API
-import { roleApi } from '../../../store/role/roleApi'; // Import the API
+import { Checkbox, FormControlLabel, Button, Box } from '@mui/material';
+import { permissionApi } from '../../../store/permission/permissionApi';
 
 interface Permission {
   id: number;
-  role: number;
   permission_name: string;
   description: string;
-}
-
-interface Role {
-  id: number;
-  name: string;
-}
-
-interface PermissionHelper {
-  id: number;
-  key: string; // This is the value for permission_name
-  name: string;
-  description: string;
+  is_permission: boolean;
 }
 
 const PermissionFormPage: React.FC = () => {
-  const { id } = useParams<{ id?: string }>(); // Get the permission ID from the URL
+  const { id: roleId } = useParams<{ id: string }>(); // Rename 'id' to 'roleId'
   const navigate = useNavigate();
-  const [permission, setPermission] = useState<Permission | null>(null);
-  const [description, setDescription] = useState('');
-  const [roles, setRoles] = useState<Role[]>([]); // State for roles
-  const [permissionHelpers, setPermissionHelpers] = useState<PermissionHelper[]>([]); // State for permission helpers
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null); // Selected role
-  const [selectedPermissionHelper, setSelectedPermissionHelper] = useState<PermissionHelper | null>(null); // Selected permission helper
-  const [loadingRoles, setLoadingRoles] = useState(false); // Loading state for roles
-  const [loadingPermissionHelpers, setLoadingPermissionHelpers] = useState(false); // Loading state for permission helpers
+  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        // Fetch roles and permission helpers only on mount
-        if (id) {
-        permissionApi
-            .getPermissionById(Number(id))
-            .then((response) => {
-            setPermission(response.data);
-    
-            // Find the role from the roles list based on the role id
-            setSelectedRole(roles.find((role) => role.id === response.data.role) || null);
-    
-            // Find the corresponding PermissionHelper by key
-            setSelectedPermissionHelper(
-                permissionHelpers.find((helper) => helper.key === response.data.permission_name) || null
-            );
-    
-            setDescription(response.data.description || '');
-            })
-            .catch((error) => {
-            console.error('Failed to fetch permission:', error);
-            });
-        }
-    
-        // Fetch roles and permission helpers only once
-        if (roles.length === 0) {
-            fetchRoles();
-        }
-        if (permissionHelpers.length === 0) {
-            fetchPermissionHelpers();
-        }
-    }, [id, roles.length, permissionHelpers.length]);
+  useEffect(() => {
+    fetchRolePermissions();
+  }, []);
 
-  const fetchRoles = () => {
-    setLoadingRoles(true);
-    roleApi
-      .getRoles()
-      .then((response) => {
-        setRoles(response.data);
-      })
-      .catch((error) => {
-        console.error('Failed to fetch roles:', error);
-      })
-      .finally(() => {
-        setLoadingRoles(false);
-      });
-  };
-
-  const fetchPermissionHelpers = () => {
-    setLoadingPermissionHelpers(true);
-    permissionApi
-      .getPermissionHelpers() // Replace this with the actual API call to get permission helpers
-      .then((response) => {
-        setPermissionHelpers(response.data);
-      })
-      .catch((error) => {
-        console.error('Failed to fetch permission helpers:', error);
-      })
-      .finally(() => {
-        setLoadingPermissionHelpers(false);
-      });
-  };
-
-  const handleSave = () => {
-    const newPermissionPayload = {
-      role: selectedRole ? selectedRole.id : undefined,
-      permission_name: selectedPermissionHelper ? selectedPermissionHelper.key : '', // Use the `key` for permission_name
-      description: description,
-    };
-
-    if (permission) {
-      // Update permission
-      permissionApi
-        .updatePermission({ id: permission.id, ...newPermissionPayload })
-        .then(() => {
-          navigate('/permissions'); // Redirect to the permissions list after saving
-        })
-        .catch((error) => {
-          console.error('Failed to update permission:', error);
-        });
-    } else {
-      // Create new permission
-      permissionApi
-        .createPermission(newPermissionPayload)
-        .then(() => {
-          navigate('/permissions'); // Redirect to the permissions list after adding
-        })
-        .catch((error) => {
-          console.error('Failed to add permission:', error);
-        });
+  const fetchRolePermissions = () => {
+    console.log(roleId); // This should now log the correct ID from the URL
+    if (!roleId) {
+      console.error('Role ID is undefined');
+      return;
     }
+
+    setLoading(true);
+    permissionApi
+      .getPermissions(Number(roleId)) // Convert string to number safely
+      .then((response) => {
+        setPermissions(response.data);
+      })
+      .catch((error) => {
+        console.error('Failed to fetch role permissions:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
+
+  const handlePermissionToggle = (permissionId: number) => {
+    setPermissions((prev) =>
+      prev.map((perm) =>
+        perm.id === permissionId
+          ? { ...perm, is_permission: !perm.is_permission }
+          : perm
+      )
+    );
+  };
+
+  const savePermissions = () => {
+    // Prepare the array of updates
+    const updates = permissions.map((perm) => ({
+      id: perm.id,
+      role: Number(roleId),
+      permission_name: perm.permission_name,
+      description: perm.description,
+      is_permission: perm.is_permission,
+    }));
+  
+    // Send the entire array in one API call
+    permissionApi.updatePermissions(updates)
+      .then(() => {
+        navigate('/permissions');  // Navigate after successful update
+      })
+      .catch((error) => {
+        console.error('Failed to update permissions:', error);
+      });
+  };
+  
 
   return (
-    <Paper sx={{ width: '100%', padding: 3 }}>
-      <Box sx={{ width: '100%', margin: '0 auto' }}>
-        <Box sx={{ marginBottom: 2 }}>
-            <label htmlFor="description" style={{ display: 'block', marginBottom: 8 }}>
-                Permission
-            </label>
-            <Autocomplete
-                value={selectedRole}
-                onChange={(event, newValue) => setSelectedRole(newValue)}
-                options={roles}
-                getOptionLabel={(option) => option.name}
-                loading={loadingRoles}
-                renderInput={(params) => <TextField {...params} />}
-                sx={{ marginBottom: 2 }}
+    <Box>
+      <h2>Role Details</h2>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}> {/* This makes the list vertical */}
+          {permissions.map((permission) => (
+            <FormControlLabel
+              key={permission.id}
+              control={
+                <Checkbox
+                  checked={permission.is_permission}
+                  onChange={() => handlePermissionToggle(permission.id)}
+                />
+              }
+              label={`${permission.permission_name} - ${permission.description}`}
+              sx={{ marginBottom: 1 }}  // Adds space between checkboxes
             />
+          ))}
         </Box>
-
-        <Box sx={{ marginBottom: 2 }}>
-            <label htmlFor="description" style={{ display: 'block', marginBottom: 8 }}>
-                Permission
-            </label>
-            <Autocomplete
-                value={selectedPermissionHelper}
-                onChange={(event, newValue) => setSelectedPermissionHelper(newValue)}
-                options={permissionHelpers}
-                getOptionLabel={(option) => option.name}
-                loading={loadingPermissionHelpers}
-                renderInput={(params) => <TextField {...params} />}
-                sx={{ marginBottom: 2 }}
-            />
-        </Box>
-
-        <Box sx={{ marginBottom: 2 }}>
-            <label htmlFor="description" style={{ display: 'block', marginBottom: 8 }}>
-                Description
-            </label>
-            <TextField
-                id="description"
-                fullWidth
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter description here"
-            />
-        </Box>
-
-        
-        <Button variant="contained" color="primary" onClick={handleSave}>
-          {permission ? 'Save Changes' : 'Add Permission'}
-        </Button>
-      </Box>
-    </Paper>
+      )}
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={savePermissions}
+        disabled={loading}
+        sx={{ marginTop: 2 }}  // Adds margin to the save button
+      >
+        Save Changes
+      </Button>
+    </Box>
   );
 };
 
