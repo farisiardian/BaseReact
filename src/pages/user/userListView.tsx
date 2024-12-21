@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { DataGrid, GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridActionsCellItem, GridRowParams } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
-import { Edit, Delete, Add, Person } from '@mui/icons-material';
+import { Edit, Delete, Add } from '@mui/icons-material';
 import { Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { userApi } from '../../store/user/userApi';
@@ -11,25 +11,29 @@ interface User {
   id: number;
   username: string;
   email: string;
-  roles: { id: number; name: string }[]; // Roles as an array of objects
+  role_detail: { id: number; name: string }[]; // Roles as an array of objects
 }
 
 const UserListView: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [page, setPage] = useState(0); // DataGrid uses 0-based indexing for pages
+  const [pageSize, setPageSize] = useState(5);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState<number | null>(null);
-
+  
   useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = () => {
+    fetchUsers(page + 1, pageSize);
+  }, [page, pageSize]);
+  
+  const fetchUsers = (page: number, pageSize: number) => {
     setLoading(true);
     userApi
-      .getUsers()
+      .getUsers({ page, page_size: pageSize })
       .then((response) => {
-        setUsers(response.data);
+        setUsers(response.data.results);
+        setTotalUsers(response.data.count);
       })
       .catch((error) => {
         console.error('Failed to fetch users:', error);
@@ -37,7 +41,7 @@ const UserListView: React.FC = () => {
       .finally(() => {
         setLoading(false);
       });
-  };
+  };  
 
   const handleDelete = (id: number) => {
     setUserToDelete(id);
@@ -50,7 +54,7 @@ const UserListView: React.FC = () => {
         .deleteUser(userToDelete)
         .then(() => {
           console.log('User deleted successfully');
-          fetchUsers();
+          fetchUsers(page + 1, pageSize); // Refresh the current page
         })
         .catch((error) => {
           console.error('Failed to delete user:', error);
@@ -75,22 +79,22 @@ const UserListView: React.FC = () => {
       renderCell: (params) => {
         const role = params.value as { id: number; name: string } | null;
         return role ? role.name : 'No roles';
-      },      
+      },
     },
     {
       field: 'actions',
       headerName: 'Actions',
       type: 'actions',
       width: 150,
-      getActions: (params) => [
-        <Link to={`/users/edit/${params.row.id}`} key={params.row.id}>
+      getActions: (params: GridRowParams<User>) => [
+        <Link to={`/users/edit/${params.row.id}`} key={`edit-${params.row.id}`}>
           <GridActionsCellItem icon={<Edit />} label="Edit" />
         </Link>,
         <GridActionsCellItem
           icon={<Delete />}
           label="Delete"
-          onClick={() => handleDelete(params.row.id as number)}
-        />
+          onClick={() => handleDelete(params.row.id)}
+        />,
       ],
     },
   ];
@@ -112,7 +116,15 @@ const UserListView: React.FC = () => {
         columns={columns}
         loading={loading}
         getRowId={(row) => row.id}
+        pagination
+        paginationMode="server"
+        rowCount={totalUsers}
         pageSizeOptions={[5, 10]}
+        paginationModel={{ page, pageSize }}
+        onPaginationModelChange={(model) => {
+          setPage(model.page);
+          setPageSize(model.pageSize);
+        }}
         checkboxSelection
         sx={{ width: '100%', border: 0 }}
       />

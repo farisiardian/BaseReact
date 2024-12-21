@@ -15,19 +15,23 @@ interface Role {
 const RoleListView: React.FC = () => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalRoles, setTotalRoles] = useState(0);
+  const [page, setPage] = useState(0); // DataGrid uses 0-based indexing for pages
+  const [pageSize, setPageSize] = useState(5);
   const [openDialog, setOpenDialog] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchRoles();
-  }, []);
+    fetchRoles(page + 1, pageSize);
+  }, [page, pageSize]);
 
-  const fetchRoles = () => {
+  const fetchRoles = (page: number, pageSize: number) => {
     setLoading(true);
     roleApi
-      .getRoles()
+      .getRoles({ page, page_size: pageSize })
       .then((response) => {
-        setRoles(response.data);
+        setRoles(response.data.results);
+        setTotalRoles(response.data.count);
       })
       .catch((error) => {
         console.error('Failed to fetch roles:', error);
@@ -48,7 +52,7 @@ const RoleListView: React.FC = () => {
         .deleteRole(roleToDelete)
         .then(() => {
           console.log('Role deleted successfully');
-          fetchRoles();
+          fetchRoles(page + 1, pageSize);
         })
         .catch((error) => {
           console.error('Failed to delete role:', error);
@@ -103,7 +107,15 @@ const RoleListView: React.FC = () => {
             columns={columns}
             loading={loading}
             getRowId={(row) => row.id}
+            pagination
+            paginationMode="server"
+            rowCount={totalRoles}
             pageSizeOptions={[5, 10]}
+            paginationModel={{ page, pageSize }}
+            onPaginationModelChange={(model) => {
+              setPage(model.page);
+              setPageSize(model.pageSize);
+            }}
             checkboxSelection
             sx={{ width: '100%', border: 0 }}  // Ensure full width of DataGrid
         />

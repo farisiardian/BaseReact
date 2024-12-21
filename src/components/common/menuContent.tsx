@@ -9,13 +9,13 @@ import { HomeRounded, Person2Outlined, SettingsRounded, KeyOutlined, LockOutline
 
 const mainListItems = [
   { text: 'Home', icon: <HomeRounded />, path: '/' },
-  { text: 'User', icon: <Person2Outlined />, path: '/users' },
-  { text: 'Role', icon: <KeyOutlined />, path: '/roles' },
-  { text: 'Permission', icon: <LockOutlined />, path: '/permissions' },
 ];
 
 const secondaryListItems = [
-  { text: 'Settings', icon: <SettingsRounded />, path: '/settings' },
+  { text: 'User', icon: <Person2Outlined />, path: '/users' },
+  { text: 'Role', icon: <KeyOutlined />, path: '/roles' },
+  { text: 'Permission', icon: <LockOutlined />, path: '/permissions' },
+  { text: 'Settings', icon: <SettingsRounded />, path: '/' },
 ];
 
 export default function MenuContent() {

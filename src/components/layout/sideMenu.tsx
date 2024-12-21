@@ -30,7 +30,7 @@ export default function SideMenu() {
     userApi
       .getMe()
       .then((response) => {
-        setProfile(response.data);
+        setProfile(response.data.user);
       })
       .catch((error) => {
         console.error('Failed to fetch profile:', error);
